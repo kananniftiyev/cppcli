@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ ! -d "build" ]; then
+  mkdir build
+  echo "Created build directory"
+fi
 # Change to the build directory
 cd build || { echo "Failed to change directory to build"; exit 1; }
 
