@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     std::filesystem::create_directory("build");
 
 
-    std::ofstream cmake("CMakeList.txt");
+    std::ofstream cmake("CMakeLists.txt");
     std::ofstream main("src/main.cpp");
     std::ofstream readme("README.md");
     std::ofstream build("build.sh");
