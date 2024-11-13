@@ -8,8 +8,7 @@
 #include <stdexcept>
 #include <exception>
 #include <sstream>
-
-static std::string PROJECT_NAME;
+#include "Contents.hpp"
 
 void info_output(char *argv)
 {
@@ -17,30 +16,14 @@ void info_output(char *argv)
     fmt::print(fg(fmt::color::gray), "Usage: {} run\n", argv[0]);
 }
 
-std::string read_file_content(const std::string &file_location)
-{
-    std::ifstream file(file_location);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Unable to open file: " + file_location);
-    }
-
-    std::ostringstream content_stream;
-    content_stream << file.rdbuf();
-    std::string file_content = content_stream.str();
-
-    if (file_content.find("project_name") != std::string::npos)
-    {
-        file_content.replace(file_content.find("project_name"), sizeof("project_name") - 1, PROJECT_NAME);
-    }
-
-    return file_content;
-}
-
 // TODO: use exceptions
-void create_project(char *argv)
+void create_project(std::string &project_name)
 {
-    std::string project_name{argv[1]};
+    std::cout << "asd" << std::endl;
+
+    std::filesystem::create_directory(project_name);
+
+    std::filesystem::current_path(project_name);
 
     std::filesystem::create_directory("src");
     std::filesystem::create_directory("lib");
@@ -53,11 +36,13 @@ void create_project(char *argv)
     std::ofstream build("build.sh");
     std::ofstream ignore(".gitignore");
 
-    std::string cmakeContent{read_file_content("../contents/cmake.txt")};
-    std::string mainContent{read_file_content("../contents/main.txt")};
-    std::string readmeContent{read_file_content("../contents/readme.txt")};
-    std::string ignoreContent{read_file_content("../contents/ignore.txt")};
-    std::string buildContent{read_file_content("../contents/build.txt")};
+    auto content = contents(project_name);
+
+    std::string cmakeContent{content["cmake"]};
+    std::string mainContent{content["main"]};
+    std::string readmeContent{content["readme"]};
+    std::string ignoreContent{content["ignore"]};
+    std::string buildContent{content["build"]};
 
     cmake << cmakeContent;
     main << mainContent;
@@ -84,6 +69,20 @@ void run_project()
     system("./build.sh");
 }
 
+void show_version()
+{
+    fmt::print(fg(fmt::color::gray), "cppcli v1.0.0 (stable)\n");
+}
+
+// TODO: Commands Enum.
+enum class Commands
+{
+    New,
+    Run,
+    Version,
+    Unknown
+};
+
 // TODO: OpenGL support tho.
 int main(int argc, char *argv[])
 {
@@ -93,25 +92,42 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    const std::string command = argv[1];
+    std::string command = argv[1];
     std::string project_name;
 
-    if (argv[2] != nullptr)
+    if (argc < 2)
     {
-        project_name = argv[2];
+        info_output(*argv);
+        return 1;
     }
 
-    if (command == "run")
+    if (command == "--version")
+    {
+        show_version();
+        return 0;
+    }
+    else if (command == "run")
     {
         run_project();
+        return 0;
     }
-    else if (command == "new" && project_name != "")
+    else if (command == "new")
     {
-        PROJECT_NAME = project_name;
-        create_project(*argv);
+        // Ensure that the project name is provided as the second argument
+        if (argc < 3) // Check if project name is provided
+        {
+            fmt::print(fg(fmt::color::red), "ERROR: Missing project name\n");
+            info_output(*argv);
+            return 1;
+        }
+
+        project_name = argv[2]; // Assign project name from argv[2]
+        create_project(project_name);
+        return 0;
     }
     else
     {
+        std::cout << "Unknown command: " << argv[1] << std::endl;
         info_output(*argv);
     }
 
