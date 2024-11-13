@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Include directories
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
+find_package(fmt REQUIRED)
 
 # Use file(GLOB ...) to gather all source files in the src directory
 file(GLOB TARGET_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
@@ -14,7 +15,7 @@ file(GLOB TARGET_SRC "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_executable(main ${TARGET_SRC})
 
 # Link with libgit2
-target_link_libraries(main)
+target_link_libraries(main PRIVATE fmt::fmt)
 
 # CPack configuration
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
