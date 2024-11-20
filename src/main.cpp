@@ -19,8 +19,6 @@ void info_output(char *argv)
 // TODO: use exceptions
 void create_project(std::string &project_name)
 {
-    std::cout << "asd" << std::endl;
-
     std::filesystem::create_directory(project_name);
 
     std::filesystem::current_path(project_name);
