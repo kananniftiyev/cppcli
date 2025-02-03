@@ -69,7 +69,7 @@ void run_project()
 
 void show_version()
 {
-    fmt::print(fg(fmt::color::gray), "cppcli v1.0.0 (stable)\n");
+    fmt::print(fg(fmt::color::gray), "cppcli v0.1.1 (stable)\n");
 }
 
 // TODO: Commands Enum.

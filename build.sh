@@ -1,43 +1,71 @@
 #!/bin/bash
 
-if [ ! -d "build" ]; then
-  mkdir build
-  echo "Created build directory"
+set -e  # Exit immediately if a command exits with a non-zero status
+
+# Define colors for styling output
+RED='\e[31m'
+DARK_RED='\e[91m'
+YELLOW='\e[33m'
+GREEN='\e[32m'
+RESET='\e[0m'
+
+# Print ASCII banner in dark red
+echo -e "${GREEN}"
+cat << "EOF"
+  _____ ____________  _____  _     _____ 
+ /  __ \| ___ \ ___ \/  __ \| |   |_   _|
+ | /  \/| |_/ / |_/ /| /  \/| |     | |  
+ | |    |  __/|  __/ | |    | |     | |  
+ | \__/\| |   | |    | \__/\| |_____| |_ 
+  \____/\_|   \_|     \____/\_____/\___/ 
+                                         
+EOF
+echo -e "${RESET}"
+
+BUILD_DIR="build"
+BIN_DIR="bin"
+EXECUTABLE="main"
+
+# Ensure the build directory exists
+if [ ! -d "$BUILD_DIR" ]; then
+    mkdir "$BUILD_DIR"
+    echo -e "${GREEN}Created build directory. 🎉${RESET}"
 fi
-# Change to the build directory
-cd build || { echo "Failed to change directory to build"; exit 1; }
 
-# Run CMake
-cmake .. || { echo "CMake configuration failed"; exit 1; }
+# Change to the project directory (assuming the script is run from the project root)
+PROJECT_DIR="$(dirname "$0")"
+cd "$PROJECT_DIR" || { echo -e "${RED}Failed to change directory to project root. 💥${RESET}"; exit 1; }
 
-# Build the project
-make || { echo "Build failed"; exit 1; }
-
-# Check if the binary was created
-if [ -f "./main" ]; then
-    echo "Binary 'main' successfully created."
+# Run CMake and Make in the build directory
+if cmake -S . -B "$BUILD_DIR" && make -C "$BUILD_DIR"; then
+    echo -e "${GREEN}Build completed successfully. 🚀${RESET}"
 else
-    echo "Binary 'main' not found. Build might have failed."
+    echo -e "${RED}Build failed. 😱${RESET}"
     exit 1
 fi
 
-# Notify that the build is complete
-echo -e "\e[31mBuilt the project\e[0m"
+# Check if the binary exists in the build directory
+if [ -f "$BUILD_DIR/$EXECUTABLE" ]; then
+    echo -e "${GREEN}Binary '$EXECUTABLE' successfully created. ✅${RESET}"
+else
+    echo -e "${RED}Binary '$EXECUTABLE' not found. Build might have failed. ⚠️${RESET}"
+    exit 1
+fi
 
-# Display a stylish running message
-echo -e "${GREEN}==============================="
-echo -e "${YELLOW}      Running the code..."
+# Stylish run message
+echo -e "${GREEN}===============================${RESET}"
+echo -e "${YELLOW}      Running the code... 🚀${RESET}"
 echo -e "${GREEN}===============================${RESET}"
 
-# Run the main executable with any arguments passed to the script
-./main "$@"
+# Execute the binary with passed arguments from projectDir/build
+"$PROJECT_DIR/$BUILD_DIR/$EXECUTABLE" "$@"
 
-# Create bin directory if it doesn't exist
-mkdir -p ../bin
+# Ensure the bin directory exists
+mkdir -p "$BIN_DIR"
 
 # Move the binary to the bin directory
-if mv ./main ../bin; then
-    echo "Binary moved to ../bin"
+if mv "$PROJECT_DIR/$BUILD_DIR/$EXECUTABLE" "$PROJECT_DIR/$BIN_DIR/"; then
+    echo -e "${GREEN}Binary moved to $BIN_DIR/ 💼${RESET}"
 else
-    echo "Failed to move the binary to ../bin"
+    echo -e "${RED}Failed to move the binary to $BIN_DIR/ 😔${RESET}"
 fi
