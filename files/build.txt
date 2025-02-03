@@ -58,10 +58,7 @@ echo -e "${YELLOW}      Running the code... 🚀${RESET}"
 echo -e "${GREEN}===============================${RESET}"
 
 # Execute the binary with passed arguments from projectDir/build
-cd "$PROJECT_DIR"
 "$PROJECT_DIR/$BUILD_DIR/$EXECUTABLE" "$@"
-
-echo -e "${GREEN}===============================${RESET}"
 
 # Ensure the bin directory exists
 mkdir -p "$BIN_DIR"

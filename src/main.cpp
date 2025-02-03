@@ -8,7 +8,8 @@
 #include <stdexcept>
 #include <exception>
 #include <sstream>
-#include "Contents.hpp"
+
+static std::string PROJECT_NAME = "";
 
 void info_output(char *argv)
 {
@@ -16,9 +17,31 @@ void info_output(char *argv)
     fmt::print(fg(fmt::color::gray), "Usage: {} run\n", argv[0]);
 }
 
+void readFile(std::ifstream &file, std::string &content)
+{
+    if (!file.is_open())
+    {
+        std::cerr << "Error opening the file!";
+        return;
+    }
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        size_t pos = 0;
+        while ((pos = line.find("{NAME}", pos)) != std::string::npos)
+        {
+            line.replace(pos, 6, PROJECT_NAME);
+            pos += PROJECT_NAME.length();
+        }
+        content += line + "\n";
+    }
+}
+
 // TODO: use exceptions
 void create_project(std::string &project_name)
 {
+    PROJECT_NAME = project_name;
     std::filesystem::create_directory(project_name);
 
     std::filesystem::current_path(project_name);
@@ -34,13 +57,23 @@ void create_project(std::string &project_name)
     std::ofstream build("build.sh");
     std::ofstream ignore(".gitignore");
 
-    auto content = contents(project_name);
+    std::ifstream mainFile("../files/main.txt");
+    std::ifstream buildFile("../files/build.txt");
+    std::ifstream gitignoreFile("../files/gitignore.txt");
+    std::ifstream readmeFile("../files/README.txt");
+    std::ifstream cmakeFile("../files/CMakelistsT.txt");
 
-    std::string cmakeContent{content["cmake"]};
-    std::string mainContent{content["main"]};
-    std::string readmeContent{content["readme"]};
-    std::string ignoreContent{content["ignore"]};
-    std::string buildContent{content["build"]};
+    std::string mainContent{};
+    std::string cmakeContent{};
+    std::string readmeContent{};
+    std::string ignoreContent{};
+    std::string buildContent{};
+
+    readFile(mainFile, mainContent);
+    readFile(cmakeFile, cmakeContent);
+    readFile(readmeFile, readmeContent);
+    readFile(gitignoreFile, ignoreContent);
+    readFile(buildFile, buildContent);
 
     cmake << cmakeContent;
     main << mainContent;
